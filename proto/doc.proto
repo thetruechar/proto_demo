@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+package proto_demo_pkg;
+
+option go_package = ".;proto_demo_gopkg";
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "proto demo service";
+    version: "1.0";
+  };
+  base_path: "/some/prefix";
+};

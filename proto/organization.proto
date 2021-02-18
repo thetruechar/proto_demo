@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+package proto_demo_pkg;
+
+option go_package = ".;proto_demo_gopkg";
+
+service OrganizationService {
+
+  rpc GetOrganizations(google.protobuf.Empty) returns (GetOrganizationsResp) {
+    option (google.api.http) = {
+        get:  "/organizations";
+        response_body: "list"; //need --grpc-gateway_opt allow_repeated_fields_in_body
+    };
+  }
+
+  rpc AddOrganizationByProvider(AddOrganizationByProviderReq) returns(organization) {
+    option (google.api.http) = {
+      get: "/organizations/{provider}/{organization}"
+    };
+  }
+}
+
+
+message organization {
+  string alias = 1;
+  string origin = 2;
+}
+
+message GetOrganizationsResp {
+  repeated organization list = 1;
+}
+
+message AddOrganizationByProviderReq {
+  string provider = 1;
+  string organization = 2;
+}

@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+package proto_demo_pkg;
+
+option go_package = ".;proto_demo_gopkg";
+
+service UserService {
+
+  rpc GetUser(google.protobuf.Empty) returns (User) {
+    option (google.api.http).get = "/user";
+  }
+
+  rpc AddUser(User) returns(google.protobuf.Empty) {
+    option (google.api.http) = {
+      post: "/user/add/{login}" //bind login field in User
+      body: "*" //bind other fields in User
+    };
+  }
+}
+
+
+message User {
+  string login = 1;
+  string email = 2;
+  string fullName = 3 [json_name = "fullname"]; //default message field names are mapped to lowerCamelCase, use json_name option to specify
+  bool isAdmin = 4;
+  repeated string GardenerProjects = 5 [json_name = "projects"];
+}
