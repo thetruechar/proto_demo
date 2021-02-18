@@ -28,4 +28,9 @@ message User {
   string fullName = 3 [json_name = "fullname"]; //default message field names are mapped to lowerCamelCase, use json_name option to specify
   bool isAdmin = 4;
   repeated string GardenerProjects = 5 [json_name = "projects"];
+  Role role = 6;
+}
+enum Role {
+  Admin = 0;
+  Member = 1;
 }

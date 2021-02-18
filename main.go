@@ -8,6 +8,7 @@ import (
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"github.com/labstack/echo/v4"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/emptypb"
 	"net"
 	"net/http"
@@ -73,29 +74,41 @@ func run() error {
 			return true
 		}))
 
-	mux1 := runtime.NewServeMux()
+	marshaller := &runtime.JSONPb{
+		MarshalOptions: protojson.MarshalOptions{
+			Multiline:       true,
+			UseProtoNames:   false,
+			EmitUnpopulated: true,
+			UseEnumNumbers:  true,
+		},
+		UnmarshalOptions: protojson.UnmarshalOptions{
+			DiscardUnknown: false,
+		},
+	}
+	gwOpts := []runtime.ServeMuxOption{
+		runtime.WithMarshalerOption(runtime.MIMEWildcard, marshaller),
+	}
+
+	mux1 := runtime.NewServeMux(gwOpts...)
 	err = sdk.RegisterUserServiceHandlerServer(ctx, mux1, userSrv)
 	noError(err)
 	e.Any("/some/prefix/*", func(c echo.Context) error {
 		req := c.Request()
 		req.URL.Path = strings.TrimPrefix(req.URL.Path, "/some/prefix")
 		mux1.ServeHTTP(c.Response(), req)
-		wrappedServer.ServeHTTP(c.Response(), req)
 		return nil
 	})
 	//err := sdk.RegisterUserServiceHandlerFromEndpoint(ctx, mux1, *grpcServerEndpoint, opts)
 	//if err != nil {
 	//	return err
 	//}
-
-	mux2 := runtime.NewServeMux()
+	mux2 := runtime.NewServeMux(gwOpts...)
 	err = sdk.RegisterOrganizationServiceHandlerServer(ctx, mux2, orgSrv)
 	noError(err)
 	e.Any("/another/prefix/*", func(c echo.Context) error {
 		req := c.Request()
 		req.URL.Path = strings.TrimPrefix(req.URL.Path, "/another/prefix")
 		mux2.ServeHTTP(c.Response(), req)
-		wrappedServer.ServeHTTP(c.Response(), req)
 		return nil
 	})
 

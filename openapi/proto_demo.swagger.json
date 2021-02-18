@@ -154,6 +154,14 @@
         }
       }
     },
+    "proto_demo_pkgRole": {
+      "type": "string",
+      "enum": [
+        "Admin",
+        "Member"
+      ],
+      "default": "Admin"
+    },
     "proto_demo_pkgUser": {
       "type": "object",
       "properties": {
@@ -174,6 +182,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "role": {
+          "$ref": "#/definitions/proto_demo_pkgRole"
         }
       }
     },
