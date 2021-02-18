@@ -10,6 +10,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/emptypb"
+	"log"
 	"net"
 	"net/http"
 	sdk "proto_demo/sdk" // Update
@@ -59,12 +60,18 @@ func run() error {
 	orgSrv := &OrgServer{}
 	lis, err := net.Listen("tcp", *grpcEndpoint)
 	noError(err)
+	//m := cmux.New(lis)
+	//grpcL := m.Match(cmux.HTTP2HeaderField("content-type", "application/grpc"))
+	//httpL := m.Match(cmux.Any())
+
 	//opts := []grpc.DialOption{grpc.WithInsecure()}
 	grpcSrv := grpc.NewServer()
 	sdk.RegisterUserServiceServer(grpcSrv, userSrv)
 	sdk.RegisterOrganizationServiceServer(grpcSrv, orgSrv)
 
 	go func() {
+		log.Println("grpcSrv.Serve...")
+
 		err := grpcSrv.Serve(lis)
 		noError(err)
 	}()
@@ -124,10 +131,11 @@ func run() error {
 		//http.DefaultServeMux.ServeHTTP(resp, req)
 	})
 	webSrv := &http.Server{
-		Addr:    *grpcWebEndpoint,
+		Addr: *grpcWebEndpoint,
 		Handler: handler,
 	}
-
+	glog.Info("webSrv.Serve...")
+	//return webSrv.Serve(lis)
 	return webSrv.ListenAndServe()
 }
 
@@ -135,6 +143,7 @@ func main() {
 	flag.Parse()
 	defer glog.Flush()
 
+	glog.Info("start")
 	if err := run(); err != nil {
 		glog.Fatal(err)
 	}
